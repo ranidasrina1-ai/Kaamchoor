@@ -53,7 +53,7 @@ class VoiceRecorder(private val context: Context) {
         val out = file
         recorder = null
         file = null
-        return try {
+        try {
             rec.stop()
             rec.release()
         } catch (e: Exception) {
@@ -62,12 +62,13 @@ class VoiceRecorder(private val context: Context) {
             return null
         }
         val duration = System.currentTimeMillis() - startedAt
-        if (duration < 500 || out == null || !out.exists()) {
-            out?.delete()
+        val target = out
+        if (duration < 500 || target == null || !target.exists()) {
+            target?.delete()
             return null
         }
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", out)
-        uri to duration
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", target)
+        return uri to duration
     }
 
     fun cancel() {

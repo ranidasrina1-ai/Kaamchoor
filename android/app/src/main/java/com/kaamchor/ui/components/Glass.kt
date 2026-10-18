@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -19,14 +20,13 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.HazeMaterials
-import dev.chrisbanes.haze.rememberHazeState
 
 // ── Haze helpers ─────────────────────────────────────────────────────────────
 // Mark a scrolling / hero container as the blur *source*.
 fun Modifier.asHazeSource(state: HazeState): Modifier = this.hazeSource(state)
 
 @Composable
-fun rememberGlassState(): HazeState = rememberHazeState()
+fun rememberGlassState(): HazeState = remember { HazeState() }
 
 /**
  * Subtle Liquid-Glass surface: translucent Material container + faint hairline

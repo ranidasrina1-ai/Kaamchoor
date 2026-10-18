@@ -115,7 +115,6 @@ class WebRtcEngine(private val context: Context) {
         peers[targetUserId]?.let { return it }
         val config = PeerConnection.RTCConfiguration(iceServers).apply {
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            continueOnNetworkChange = false
         }
         val pc = factory.createPeerConnection(config, object : PeerConnection.Observer {
             override fun onIceCandidate(candidate: IceCandidate?) {

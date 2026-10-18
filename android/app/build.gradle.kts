@@ -77,6 +77,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-service:2.8.7")
 
     // Compose
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
@@ -90,6 +91,7 @@ dependencies {
 
     // Glass (Haze)
     implementation("dev.chrisbanes.haze:haze:1.4.0")
+    implementation("dev.chrisbanes.haze:haze-materials:1.4.0")
 
     // Images / video thumbs
     implementation("io.coil-kt:coil-compose:2.7.0")

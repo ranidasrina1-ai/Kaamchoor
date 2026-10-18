@@ -69,8 +69,11 @@ class MainViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             _me.value = Session.cachedUser()
-            runCatching { _me.value = Graph.repository.me() }
-                .onSuccess { Session.saveUser(it) }
+            runCatching { Graph.repository.me() }
+                .onSuccess {
+                    _me.value = it
+                    Session.saveUser(it)
+                }
         }
     }
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kaam Chor</string>
+    <string name="notif_channel_messages">Messages</string>
+    <string name="notif_channel_service">Background</string>
+    <string name="notif_channel_calls">Calls</string>
+</resources>

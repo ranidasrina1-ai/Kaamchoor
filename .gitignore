@@ -1,0 +1,34 @@
+# Python / Flask
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+*.iml
+*.hprof
+android/app/release.jks
+android/app/debug.keystore
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# Secrets
+*.b64
+release.jks
+
+# OS / editors / logs
+.DS_Store
+Thumbs.db
+*.log

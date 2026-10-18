@@ -13,7 +13,8 @@ import kotlinx.coroutines.runBlocking
 
 private val Context.sessionDataStore: DataStore<Preferences> by preferencesDataStore(name = "session")
 
-const val DEFAULT_SERVER_URL = "https://kaamchorz.dpdns.org"
+// Default to the server running on this same device (Termux). Change it in Settings.
+const val DEFAULT_SERVER_URL = "http://127.0.0.1:5000"
 
 class SessionStore(private val context: Context) {
 

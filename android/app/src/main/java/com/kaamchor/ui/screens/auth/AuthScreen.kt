@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,10 +55,14 @@ import com.kaamchor.ui.components.asHazeSource
 import com.kaamchor.ui.components.rememberGlassState
 import com.kaamchor.ui.theme.WordmarkStyle
 import com.kaamchor.util.Session
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 data class AuthUiState(
     val isSignup: Boolean = false,
@@ -66,6 +73,8 @@ data class AuthUiState(
     val serverUrl: String = "",
     val loading: Boolean = false,
     val error: String? = null,
+    val testStatus: String? = null,
+    val testing: Boolean = false,
     val authed: UserDto? = null,
 )
 
@@ -86,8 +95,30 @@ class AuthViewModel : ViewModel() {
     fun onEmail(v: String) = _state.update { it.copy(email = v, error = null) }
     fun onDisplayName(v: String) = _state.update { it.copy(displayName = v, error = null) }
     fun onPassword(v: String) = _state.update { it.copy(password = v, error = null) }
-    fun onServerUrl(v: String) = _state.update { it.copy(serverUrl = v, error = null) }
-    fun toggleMode() = _state.update { it.copy(isSignup = !it.isSignup, error = null) }
+    fun onServerUrl(v: String) = _state.update { it.copy(serverUrl = v, error = null, testStatus = null) }
+    fun toggleMode() = _state.update { it.copy(isSignup = !it.isSignup, error = null, testStatus = null) }
+
+    /** Pings /api/health so the user can verify the URL before logging in. */
+    fun testConnection() {
+        if (_state.value.testing) return
+        val url = com.kaamchor.data.remote.normalizeBaseUrl(_state.value.serverUrl)
+        _state.update { it.copy(testing = true, testStatus = null, error = null) }
+        viewModelScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                runCatching {
+                    OkHttpClient().newCall(
+                        Request.Builder().url(url + "api/health").get().build(),
+                    ).execute().use { it.isSuccessful }
+                }.getOrDefault(false)
+            }
+            _state.update {
+                it.copy(
+                    testing = false,
+                    testStatus = if (ok) "Connection OK" else "Cannot reach server",
+                )
+            }
+        }
+    }
 
     fun submit() {
         val s = _state.value
@@ -263,18 +294,44 @@ fun AuthScreen(onAuthed: () -> Unit) {
 
             Spacer(Modifier.height(20.dp))
 
-            var showServer by remember { mutableStateOf(false) }
-            if (!showServer) {
-                TextButton(onClick = { showServer = true }) {
-                    Text("Server: ${state.serverUrl}", style = MaterialTheme.typography.labelMedium)
-                }
-            } else {
+            Text(
+                "Server URL",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth().widthIn(max = 460.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().widthIn(max = 460.dp),
+            ) {
                 OutlinedTextField(
                     value = state.serverUrl,
                     onValueChange = vm::onServerUrl,
-                    label = { Text("Server URL") },
+                    placeholder = { Text("http://127.0.0.1:5000") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = vm::testConnection,
+                    enabled = !state.testing,
+                    modifier = Modifier.height(56.dp),
+                ) {
+                    Text(if (state.testing) "..." else "Test")
+                }
+            }
+            if (state.testStatus != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    state.testStatus!!,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (state.testStatus == "Connection OK") {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
                     modifier = Modifier.fillMaxWidth().widthIn(max = 460.dp),
                 )
             }

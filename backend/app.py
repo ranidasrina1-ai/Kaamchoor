@@ -85,8 +85,13 @@ app = create_app()
 
 
 if __name__ == "__main__":
+    from schema_sync import sync_schema
+
     with app.app_context():
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
         db.create_all()
+        added = sync_schema()
+        if added:
+            print("Added missing columns: " + ", ".join(added))
     print("Starting Kaam Chor v2 server on 0.0.0.0:5000")
     socketio.run(app, host="0.0.0.0", port=5000, allow_unsafe_werkzeug=True)
